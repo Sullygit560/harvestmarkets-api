@@ -6,7 +6,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # You can restrict this later to Vercel domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -14,11 +14,9 @@ app.add_middleware(
 
 @app.get("/api/latest-score")
 def get_score():
-    scores = generate_score()  # ✅ uses real scores
-
-    avg_score = sum(scores.values()) / len(scores)
+    scores, total = generate_score()
 
     return {
-        "score": round(avg_score, 2),  # For the gauge
-        "scores": scores               # For component cards
+        "score": round(total, 2),  # ✅ used by the gauge
+        "scores": scores           # ✅ used by the component cards
     }
