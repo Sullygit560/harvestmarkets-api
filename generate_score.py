@@ -14,7 +14,6 @@ def generate_score():
     os.makedirs("daily_scores", exist_ok=True)
 
     scores = {
-        "date": datetime.now(UTC).strftime("%Y-%m-%d"),
         "price": score_price(),
         "cot": None,
         "weather": score_weather(),
@@ -25,14 +24,17 @@ def generate_score():
     cot_score, cot_weighted = score_cot()
     scores["cot"] = cot_score
 
-    base_score = sum(v for v in scores.values() if isinstance(v, (int, float)))
     boosted_score = apply_boost(scores)
 
-    overall = round(boosted_score, 2)
+    # Save for historical tracking
+    full_output = {
+        "date": datetime.now(UTC).strftime("%Y-%m-%d"),
+        **scores,
+        "cot_weighted": cot_weighted,
+        "total_score": round(boosted_score, 2)
+    }
+    df = pd.DataFrame([full_output])
+    df.to_csv(f"daily_scores/{full_output['date']}_score.csv", index=False)
 
-    # Optionally save daily score
-    scores["total_score"] = overall
-    df = pd.DataFrame([scores])
-    df.to_csv(f"daily_scores/{scores['date']}_score.csv", index=False)
+    return scores, boosted_score
 
-    return scores, overall
