@@ -1,47 +1,31 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import glob
-import os
 
 app = FastAPI()
 
-# Enable CORS so frontend can fetch from backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow all for now
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.get("/api/latest-score")
-def get_latest_score():
-    try:
-        # Look for the latest *_score.csv file in daily_scores/
-        score_files = glob.glob("daily_scores/*_score.csv")
-        if not score_files:
-            raise FileNotFoundError("No score files found in daily_scores/")
+def get_score():
+    scores = {
+        "price": 3.5,
+        "cot": 8.61,
+        "weather": 50.0,
+        "export": 1,
+        "technical": 2.8,
+        "news": 50
+    }
 
-        latest_file = max(score_files, key=os.path.getctime)
+    avg_score = sum(scores.values()) / len(scores)
 
-        df = pd.read_csv(latest_file)
-        latest = df.iloc[-1].to_dict()
-
-        # Optional: Restructure output
-        score_data = {
-            "date": latest["date"],
-            "scores": {
-                "price": latest.get("price_score"),
-                "cot": latest.get("cot_score"),
-                "weather": latest.get("weather_score"),
-                "export": latest.get("export_score"),
-                "technical": latest.get("technical_score"),
-                "news": 50  # placeholder until real news sentiment is added
-            }
-        }
-
-        return score_data
-
-    except Exception as e:
-        return {"error": str(e)}
+    return {
+        "date": "2025-05-05",  # You can make this dynamic later
+        "score": round(avg_score, 2),  # Overall score for the gauge
+        "scores": scores  # Individual component scores
+    }
