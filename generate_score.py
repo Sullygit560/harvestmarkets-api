@@ -16,39 +16,39 @@ def normalize(value, min_val=0, max_val=10):
 def generate_score():
     os.makedirs("daily_scores", exist_ok=True)
 
-    # Raw scores
+    # Fetch raw scores from component functions
     raw_scores = {
         "price": score_price(),         # assumed 0–10
         "cot": None,
-        "weather": score_weather(),     # assumed 0–100 already
+        "weather": score_weather(),     # assumed 0–100
         "export": score_export(),       # assumed 0–10
-        "technical": score_technical(), # assumed 0–10
+        "technical": score_technical()  # assumed 0–10
     }
 
-    # COT returns tuple
     cot_score, cot_weighted = score_cot()
     raw_scores["cot"] = cot_score
 
-    # Normalize to 0–100
-    scores = {
+    # Normalize each score to a 0–100 scale
+    normalized_scores = {
         "price": normalize(raw_scores["price"]),
         "cot": normalize(raw_scores["cot"]),
         "weather": raw_scores["weather"],
         "export": normalize(raw_scores["export"]),
-        "technical": normalize(raw_scores["technical"]),
+        "technical": normalize(raw_scores["technical"])
     }
 
-    boosted_score = apply_boost(scores)
+    # Only the total score is boosted — components remain clean
+    boosted_score = apply_boost(normalized_scores)
 
-    # Save full output
-    output = {
+    # Full output for CSV logging
+    full_output = {
         "date": datetime.now(UTC).strftime("%Y-%m-%d"),
-        **scores,
+        **normalized_scores,
         "cot_weighted": cot_weighted,
         "total_score": round(boosted_score, 2)
     }
 
-    pd.DataFrame([output]).to_csv(f"daily_scores/{output['date']}_score.csv", index=False)
+    pd.DataFrame([full_output]).to_csv(f"daily_scores/{full_output['date']}_score.csv", index=False)
 
-    return scores, boosted_score
-
+    # Return values for API
+    return normalized_scores, boosted_score
