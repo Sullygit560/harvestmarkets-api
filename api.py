@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from generate_score import generate_score
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all for now
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -13,19 +14,11 @@ app.add_middleware(
 
 @app.get("/api/latest-score")
 def get_score():
-    scores = {
-        "price": 3.5,
-        "cot": 8.61,
-        "weather": 50.0,
-        "export": 1,
-        "technical": 2.8,
-        "news": 50
-    }
+    scores = generate_score()  # ✅ uses real scores
 
     avg_score = sum(scores.values()) / len(scores)
 
     return {
-        "date": "2025-05-05",  # You can make this dynamic later
-        "score": round(avg_score, 2),  # Overall score for the gauge
-        "scores": scores  # Individual component scores
+        "score": round(avg_score, 2),  # For the gauge
+        "scores": scores               # For component cards
     }
