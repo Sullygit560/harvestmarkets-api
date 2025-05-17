@@ -63,7 +63,7 @@ def get_recommendation(score):
 def check_and_notify_score(score):
     old_score = get_last_score()
     print(f"[DEBUG] Old score: {old_score}, New score: {score}")
-    if True:  # Force alert temporarily
+    if old_score != score:
         recommendation = get_recommendation(score)
         print("[DEBUG] Triggering SendGrid email...")
         send_alert_email(old_score, score, recommendation)
